@@ -118,18 +118,42 @@ public class ClientConsole implements ChatIF
   public static void main(String[] args) 
   {
     String host = "";
-
-
-    try
-    {
-      host = args[0];
+    int port;
+    Scanner user = new Scanner(System.in);
+    System.out.println("Users place your ID");
+    String ID = user.nextLine();
+    
+    if (ID.equals("")) {
+    	System.out.println("Error: cant setup connection since you dont have an ID" + "Terminating client");
+    	System.exit(1);
+    	
+    } else {
+    	Scanner port_type = new Scanner(System.in);
+    	System.out.println("port number");
+    	String stport = port_type.nextLine();
+    	
+        try
+        {
+          host = args[0];
+        }
+        catch(ArrayIndexOutOfBoundsException e)
+        {
+          host = "localhost";
+        }
+        
+        try {
+        	port = Integer.parseInt(stport);
+        	
+        } catch(Throwable t) {
+        	port = DEFAULT_PORT;
+        }
+        ClientConsole chat= new ClientConsole(host, port);
+        System.out.println("You are in the port" + port);
+        chat.accept();  //Wait for console data
     }
-    catch(ArrayIndexOutOfBoundsException e)
-    {
-      host = "localhost";
-    }
-    ClientConsole chat= new ClientConsole(host, DEFAULT_PORT);
-    chat.accept();  //Wait for console data
+    
+    
+
   }
 }
 //End of ConsoleChat class

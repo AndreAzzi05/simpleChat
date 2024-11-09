@@ -27,6 +27,7 @@ public class ChatClient extends AbstractClient
    * the display method in the client.
    */
   ChatIF clientUI; 
+  String userID;
 
   
   //Constructors ****************************************************
@@ -44,8 +45,70 @@ public class ChatClient extends AbstractClient
   {
     super(host, port); //Call the superclass constructor
     this.clientUI = clientUI;
+    this.userID = userID;
     openConnection();
   }
+  
+  private void handleCommandClientUI(String message) throws IOException{
+	  String command = message.substring(1);
+	  
+	  if (command.equals("quit")) {
+		  this.quit();
+	  }
+	  else if (command.equals("logoff")) {
+		  closeConnection();
+	  }
+	  else if (command.equals("gethost")) {
+		  this.clientUI.display("Host: " + getHost());
+	  }
+	  else if (command.equals("getport")) {
+		  this.clientUI.display("port: " + getPort());
+			  
+		  }
+	  else if (message.startsWith("#setport")) {
+		  if (!isConnected()) {
+			  this.clientUI.display("Cant set port while connected to server");
+		  }
+		  else {
+			  this.setPort(Integer.parseInt(message.substring(8).strip()));
+			  this.clientUI.display("port: " + getPort());
+		  }
+	  }
+	  else if (message.startsWith("#sethost")) {
+		  if (!isConnected()) {
+			  this.clientUI.display("Cant set host while connected to server");
+		  }
+		  else {
+			  this.setPort(Integer.parseInt(message.substring(8).strip()));
+			  this.clientUI.display("Host set to: " + getHost());
+		  }
+		   
+	  }
+	  
+	  else if (message.startsWith("#login")) {
+		  if (!isConnected()) {
+			  this.clientUI.display("We are already connected to a server");
+		  }
+		  else {
+			  openConnection();
+			  this.sendToServer(message);
+		  }
+	  }
+	  else {
+		  this.clientUI.display("Command not recognized");
+	  }  
+  }
+  
+  @Override
+  protected void connectionClosed() {
+	  clientUI.display("Connection closed");
+  }
+  
+  @Override
+  protected void connectionException(Exception exception) {
+	  clientUI.display("Connection lost");
+  }
+  
 
   
   //Instance methods ************************************************
@@ -79,6 +142,15 @@ public class ChatClient extends AbstractClient
         ("Could not send message to server.  Terminating client.");
       quit();
     }
+  }
+  
+  protected void connectionEstablished() {
+	  try {
+		  this.sendToServer("#login " + userID);
+		  
+	  } catch (IOException e) {
+		  e.printStackTrace();
+	  }
   }
   
   /**
